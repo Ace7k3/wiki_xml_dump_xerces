@@ -19,7 +19,10 @@ int main(int argc, char* argv[])
 	PrintHandler handler;
 
 	WikiXmlDumpXerces::SingleCoreParser parser(handler, properties);
+
+	xercesc::XMLPlatformUtils::Initialize();
 	parser.Run(argv[1]);
+	xercesc::XMLPlatformUtils::Terminate();
 
 	return 0;
 }
