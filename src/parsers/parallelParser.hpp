@@ -20,8 +20,8 @@ namespace WikiXmlDumpXerces {
 
 		public: 
 			inline ParallelParser(std::function<TPageHandler(void)> handlerFactory, const WikiDumpHandlerProperties& properties)
-				:_pageHandlerFactory(handlerFactory),
-				HandlerProperties(properties)
+				:HandlerProperties(properties),
+				_pageHandlerFactory(handlerFactory)
 			{}
 
 			// run only single core because parallelization happens only on individual file level
