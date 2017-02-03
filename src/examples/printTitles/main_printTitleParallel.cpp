@@ -1,9 +1,8 @@
 #include <iostream>
 
-#include "../../parsers/singleCoreParser.hpp"
+#include "../../parsers/parallelParser.hpp"
 #include "../../handlers/abstractWikiPageHandler.hpp"
 #include "../../handlers/wikiDumpHandlerProperties.hpp"
-// #include "filePaths.hpp"
 
 struct PrintHandler : WikiXmlDumpXerces::AbstractWikiPageHandler {
 	
@@ -19,10 +18,14 @@ int main(int argc, char* argv[])
 	WikiXmlDumpXerces::WikiDumpHandlerProperties properties;
 	PrintHandler handler;
 
-	WikiXmlDumpXerces::SingleCoreParser parser(handler, properties);
+	WikiXmlDumpXerces::ParallelParser<PrintHandler> parser([](){ return PrintHandler(); }, properties);
 
 	xercesc::XMLPlatformUtils::Initialize();
-	parser.Run(argv[1]);
+	std::vector<std::string> files;
+	for(int i = 1; i < argc; i++)
+		files.push_back(argv[i]);
+
+	parser.Run(files.begin(), files.end());
 	xercesc::XMLPlatformUtils::Terminate();
 
 	return 0;

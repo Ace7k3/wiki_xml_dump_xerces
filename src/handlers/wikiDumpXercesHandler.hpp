@@ -18,7 +18,8 @@ namespace WikiXmlDumpXerces {
 
 			inline WikiDumpXercesHandler(AbstractWikiPageHandler& articleHandler, const WikiDumpHandlerProperties& properties)
 			:_articleHandler(articleHandler),
-			_handlerProperties(properties)	
+			_handlerProperties(properties),
+			_insidePage(false)
 			{}
 
 			inline void startElement(const XMLCh* const uri, const XMLCh* const localname, const XMLCh* const qname, const xercesc::Attributes& attrs)
@@ -88,7 +89,7 @@ namespace WikiXmlDumpXerces {
 
 			inline void characters(const XMLCh* const chars, const XMLSize_t length)
 			{
-				if(_elementStack.size() > 0 && (_elementStack.back() != "text" || _extractText))
+				if(_elementStack.size() > 0 && (_elementStack.back() != "text" || _handlerProperties.ExtractPageContent))
 				{
 					char* tmp = xercesc::XMLString::transcode(chars);
 					std::string str = tmp;
@@ -130,7 +131,6 @@ namespace WikiXmlDumpXerces {
 			WikiPageData _currentArticleData;
 			std::vector<std::string> _elementStack;
 			bool _insidePage;
-			bool _extractText;
 			std::size_t _articleCount;
 	};
 

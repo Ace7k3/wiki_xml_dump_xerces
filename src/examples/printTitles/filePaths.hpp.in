@@ -1,0 +1,15 @@
+#pragma once
+
+#include <vector>
+#include <string>
+
+inline std::vector<std::string> source_file_paths() 
+{
+	const std::string source_dir = "${CMAKE_SOURCE_DIR}";
+	std::vector<std::string> rtn = { source_dir, source_dir };
+
+	rtn[0] += "dummyData/French_Revolution.xml";
+	rtn[1] += "dummyData/World_War_II.xml";
+
+	return rtn;
+}
