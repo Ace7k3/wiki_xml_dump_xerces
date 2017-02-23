@@ -3,7 +3,6 @@
 #include "../../parsers/singleCoreParser.hpp"
 #include "../../handlers/abstractWikiPageHandler.hpp"
 #include "../../handlers/wikiDumpHandlerProperties.hpp"
-// #include "filePaths.hpp"
 
 struct PrintHandler : WikiXmlDumpXerces::AbstractWikiPageHandler {
 	
