@@ -34,7 +34,7 @@ namespace WikiXmlDumpXerces {
 
 				// set up call back handlers
 				_pageHandlers.push_back(_pageHandlerFactory());
-				WikiDumpXercesHandler handler(_pageHandlers.back(), HandlerProperties);
+				WikiDumpXercesHandler handler(_pageHandlers.back(), HandlerProperties, path);
 
 				parser->setContentHandler(&handler);
 				parser->setErrorHandler(&handler);
@@ -66,7 +66,7 @@ namespace WikiXmlDumpXerces {
 						parser->setFeature(xercesc::XMLUni::fgXercesSchema , false);   // optional
 
 						// set up call back handlers
-						WikiXmlDumpXerces::WikiDumpXercesHandler handler(this->_pageHandlers[iPath], this->HandlerProperties);
+						WikiXmlDumpXerces::WikiDumpXercesHandler handler(this->_pageHandlers[iPath], this->HandlerProperties, path);
 
 						parser->setContentHandler(&handler);
 						parser->setErrorHandler(&handler);

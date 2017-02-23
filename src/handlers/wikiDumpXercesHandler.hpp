@@ -16,10 +16,12 @@ namespace WikiXmlDumpXerces {
 	class WikiDumpXercesHandler : public xercesc::DefaultHandler {
 		public:
 
-			inline WikiDumpXercesHandler(AbstractWikiPageHandler& articleHandler, const WikiDumpHandlerProperties& properties)
+			inline WikiDumpXercesHandler(AbstractWikiPageHandler& articleHandler, const WikiDumpHandlerProperties& properties, const std::string path)
 			:_articleHandler(articleHandler),
 			_handlerProperties(properties),
-			_insidePage(false)
+			_path(path),
+			_insidePage(false),
+			_articleCount(0)
 			{}
 
 			inline void startElement(const XMLCh* const uri, const XMLCh* const localname, const XMLCh* const qname, const xercesc::Attributes& attrs)
@@ -72,7 +74,7 @@ namespace WikiXmlDumpXerces {
 					_articleCount++;
 					if(_articleCount % _handlerProperties.ProgressReportInterval == 0 && _handlerProperties.ProgressCallback)
 					{
-						_handlerProperties.ProgressCallback(_articleCount);
+						_handlerProperties.ProgressCallback(_articleCount, _path);
 					}
 				}
 				else
@@ -84,7 +86,7 @@ namespace WikiXmlDumpXerces {
 			inline void endDocument()
 			{
 				if(_handlerProperties.ProgressCallback)
-					_handlerProperties.ProgressCallback(_articleCount);
+					_handlerProperties.ProgressCallback(_articleCount, _path);
 			}
 
 			inline void characters(const XMLCh* const chars, const XMLSize_t length)
@@ -128,6 +130,7 @@ namespace WikiXmlDumpXerces {
 		private:
 			AbstractWikiPageHandler& _articleHandler;
 			const WikiDumpHandlerProperties& _handlerProperties;
+			const std::string _path;
 			WikiPageData _currentArticleData;
 			std::vector<std::string> _elementStack;
 			bool _insidePage;

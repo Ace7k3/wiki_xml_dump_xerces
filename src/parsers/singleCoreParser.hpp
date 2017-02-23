@@ -29,7 +29,7 @@ namespace WikiXmlDumpXerces {
 				parser->setFeature(xercesc::XMLUni::fgXercesSchema , false);   // optional
 
 				// set up call back handlers
-				WikiDumpXercesHandler handler(PageHandler, HandlerProperties);
+				WikiDumpXercesHandler handler(PageHandler, HandlerProperties, path);
 
 				parser->setContentHandler(&handler);
 				parser->setErrorHandler(&handler);
