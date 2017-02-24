@@ -58,12 +58,18 @@ namespace WikiXmlDumpXerces {
 
 				if(elementName == "page")
 				{
+					auto& title = _currentArticleData.MetaData.at("title");
 					if(_handlerProperties.TitleFilter){
-						if(_handlerProperties.TitleFilter(_currentArticleData.MetaData.at("title")))
+						if(_handlerProperties.TitleFilter(title))
 							_articleHandler.HandleArticle(_currentArticleData);
 					}
 					else
 						_articleHandler.HandleArticle(_currentArticleData);
+
+					if(_articleCount % _handlerProperties.ProgressReportInterval == 0 && _handlerProperties.ProgressCallback)
+					{
+						_handlerProperties.ProgressCallback(_articleCount, _path, title);
+					}
 
 					_currentArticleData.MetaData.clear();
 					_currentArticleData.IsRedirect = false;
@@ -72,10 +78,6 @@ namespace WikiXmlDumpXerces {
 					_insidePage = false;
 					_elementStack.clear();
 					_articleCount++;
-					if(_articleCount % _handlerProperties.ProgressReportInterval == 0 && _handlerProperties.ProgressCallback)
-					{
-						_handlerProperties.ProgressCallback(_articleCount, _path);
-					}
 				}
 				else
 					if(_insidePage)
@@ -86,7 +88,7 @@ namespace WikiXmlDumpXerces {
 			inline void endDocument()
 			{
 				if(_handlerProperties.ProgressCallback)
-					_handlerProperties.ProgressCallback(_articleCount, _path);
+					_handlerProperties.ProgressCallback(_articleCount, _path, "");
 			}
 
 			inline void characters(const XMLCh* const chars, const XMLSize_t length)
