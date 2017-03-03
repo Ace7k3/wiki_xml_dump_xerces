@@ -45,7 +45,7 @@ namespace WikiXmlDumpXerces {
 
 	inline std::function<bool(const std::string&)> only_categories() {
 		return [](const std::string& title) {
-			return title.substr(0,5) == "Category:";
+			return title.substr(0,9) == "Category:";
 		};
 	}
 }
