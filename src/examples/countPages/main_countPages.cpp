@@ -17,7 +17,7 @@
 #include <boost/program_options.hpp>
 
 // local files
-#include "../../handlers/countPagesXercesHandler.hpp"
+#include "countPagesXercesHandler.hpp"
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -35,7 +35,7 @@ class SingleFileCounter {
 			parser->setFeature(xercesc::XMLUni::fgSAX2CoreNameSpaces, true);   // optional
 			parser->setFeature(xercesc::XMLUni::fgXercesSchema , false);   // optional
 
-			CountPagesHandler handler;
+			CountPagesXercesHandler handler;
 			parser->setContentHandler(&handler);
 			parser->setErrorHandler(&handler);
 
