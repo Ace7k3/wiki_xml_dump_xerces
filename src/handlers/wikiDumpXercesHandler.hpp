@@ -58,7 +58,11 @@ namespace WikiXmlDumpXerces {
 
 				if(elementName == "page")
 				{
-					auto& title = _currentArticleData.MetaData.at("title");
+					auto it = _currentArticleData.MetaData.find("title");
+					if(it == _currentArticleData.MetaData.end())
+						return;
+
+					auto& title = it->second;
 					if(_handlerProperties.TitleFilter){
 						if(_handlerProperties.TitleFilter(title))
 							_articleHandler.HandleArticle(_currentArticleData);
