@@ -5,12 +5,10 @@
 #include "../../handlers/wikiDumpHandlerProperties.hpp"
 
 struct PrintHandler : WikiXmlDumpXerces::AbstractWikiPageHandler {
-	
 	void HandleArticle(const WikiXmlDumpXerces::WikiPageData& data)
 	{
 		std::cout << data.MetaData.at("title") << std::endl;
 	}
-
 };
 
 int main(int argc, char* argv[])

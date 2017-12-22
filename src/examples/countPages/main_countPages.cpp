@@ -12,101 +12,100 @@
 #include <xercesc/sax2/DefaultHandler.hpp>
 #include <xercesc/util/XMLString.hpp>
 
-// boost
-#include <boost/filesystem.hpp>
-#include <boost/program_options.hpp>
+#include <boost/algorithm/string/trim.hpp>
+
+#include "../../../libs/cxxopts/include/cxxopts.hpp"
 
 // local files
 #include "countPagesXercesHandler.hpp"
 
-namespace po = boost::program_options;
-namespace fs = boost::filesystem;
+namespace {
+	class SingleFileCounter {
+		public:
+			SingleFileCounter(std::string path)
+				:_path(path)
+			{}
 
-class SingleFileCounter {
-	public:
-		SingleFileCounter(std::string path)
-			:_path(path)
-		{}
+			std::size_t operator()(void)
+			{
+				xercesc::SAX2XMLReader* parser = xercesc::XMLReaderFactory::createXMLReader();
+				parser->setFeature(xercesc::XMLUni::fgSAX2CoreValidation, true);
+				parser->setFeature(xercesc::XMLUni::fgSAX2CoreNameSpaces, true);   // optional
+				parser->setFeature(xercesc::XMLUni::fgXercesSchema , false);   // optional
 
-		std::size_t operator()(void)
+				CountPagesXercesHandler handler;
+				parser->setContentHandler(&handler);
+				parser->setErrorHandler(&handler);
+
+				parser->parse(_path.c_str());
+				delete parser;
+
+				return handler.count();
+			}
+
+		private:
+			std::string _path;
+	};
+
+
+	std::vector<std::string> read_lines_from_file(std::istream& input)
+	{
+		std::vector<std::string> lines;
+		std::string line;
+		while(std::getline(input,line))
 		{
-			xercesc::SAX2XMLReader* parser = xercesc::XMLReaderFactory::createXMLReader();
-			parser->setFeature(xercesc::XMLUni::fgSAX2CoreValidation, true);
-			parser->setFeature(xercesc::XMLUni::fgSAX2CoreNameSpaces, true);   // optional
-			parser->setFeature(xercesc::XMLUni::fgXercesSchema , false);   // optional
-
-			CountPagesXercesHandler handler;
-			parser->setContentHandler(&handler);
-			parser->setErrorHandler(&handler);
-
-			parser->parse(_path.c_str());
-			delete parser;
-
-			return handler.count();
+			boost::trim(line);
+			if(!line.empty() && line.front() != '#')
+				lines.push_back(line);
 		}
 
-	private:
-		std::string _path;
-};
-
+		return lines;
+	}
+}
 
 
 
 int main(int argc, char* argv[])
 {
-	po::options_description desc("Allowed options");
-	desc.add_options()
-		("help", "Produce help message.")
-		("input-xml-folder", po::value<std::string>(), "The file that should be scanned for <page> tags.")
+	cxxopts::Options options("count_pages", "Counts the pages in a Wikipedia xml dump. Can be used for displaying progress in other parsers.");
+	options.add_options()
+		("help", "Produce this help message.")
+		("i,input-paths-file", "File of which each line is absolute path to an xml file that is part of a Wikipedia dump.", cxxopts::value<std::string>())
 		;
-	po::variables_map vm;
-	po::store(po::parse_command_line(argc, argv, desc), vm);
-	po::notify(vm);
+	auto parsed_options = options.parse(argc, argv);
 
 	// display help if --help was specified
-	if (vm.count("help")) {
-		std::cout << desc << std::endl;
+	if (parsed_options.count("help")){
+		std::cout << options.help() << std::endl;
 		return 0;
 	}
 
-	if(!vm.count("input-xml-folder"))
-	{
-		std::cerr << "Please specify the parameter --input-xml-folder." << std::endl;
-		return 1;
-	}
+	if(!parsed_options.count("input-paths-file"))
+		throw std::logic_error("Please specify the parameter --input-paths-file.");
 
-	const fs::path inputFolder(vm["input-xml-folder"].as<std::string>());
+	const std::string input_paths_filepath = parsed_options["input-paths-file"].as<std::string>();
+	std::ifstream input_paths_file(input_paths_filepath);
+	const auto paths = read_lines_from_file(input_paths_file);
 
-	if(!fs::is_directory(inputFolder))
-	{
-		std::cerr << "Folder at --input-xml-folder does not exist." << std::endl;
-		return 1;
-	}
+	if(paths.size() == 0)
+		throw std::logic_error("Paths file does not contain any uncommented lines.");
 
 	// init xerces
 	xercesc::XMLPlatformUtils::Initialize();
 
-	std::vector<fs::path> xmlFileList;
-	for(auto dir_it = fs::directory_iterator(inputFolder); dir_it != fs::directory_iterator(); dir_it++)
-	{
-		if(!fs::is_directory(dir_it->path()))
-			xmlFileList.push_back(dir_it->path());
-	}
-
 	std::vector<std::future<std::size_t>> futures;
-	futures.reserve(xmlFileList.size());
-	for (auto xmlPath : xmlFileList)
-		futures.emplace_back(std::async(std::launch::async, SingleFileCounter(xmlPath.c_str())));
+	futures.reserve(paths.size());
+	for (auto path : paths)
+		futures.emplace_back(std::async(std::launch::async, SingleFileCounter(path)));
 
-	std::map<std::string, std::size_t> pageCounts;
+	std::map<std::string, std::size_t> page_counts;
 	for (std::size_t i = 0; i < futures.size(); i++)
-		pageCounts.insert({ xmlFileList[i].filename().string(), futures[i].get() });
+		page_counts[paths[i]] = futures[i].get();
 
 	xercesc::XMLPlatformUtils::Terminate();
 
-	for (auto file : pageCounts) {
+	for (auto file : page_counts) 
 		std::cout << file.first << " " << file.second << std::endl;
-	}
 
 	return 0;
 }

@@ -13,7 +13,7 @@ struct PrintHandler : WikiXmlDumpXerces::AbstractWikiPageHandler {
 
 };
 
-int main(int argc, char* argv[])
+int main(int /*argc*/, char* argv[])
 {
 	WikiXmlDumpXerces::WikiDumpHandlerProperties properties;
 	PrintHandler handler;
